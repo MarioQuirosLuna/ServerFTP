@@ -1,6 +1,7 @@
 
 package servertftp;
 
+import ConnectionDB.DBConnection;
 import Logic.Server;
 
 
