@@ -28,10 +28,10 @@ public class DBConnection {
             }
         } catch (ClassNotFoundException ex) {
             System.out.println("ConnectionDB.DBConecction.conect() "+ex);
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             System.out.println("ConnectionDB.DBConecction.conect() "+ex);
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
         }finally{
             return connection;
         }
@@ -41,4 +41,7 @@ public class DBConnection {
         return connection;
     }
     
+    public void disConnect() throws SQLException{
+        this.connection.close();
+    }
 }
