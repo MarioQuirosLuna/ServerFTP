@@ -25,9 +25,9 @@ public class ListenClient extends Thread{
     private String passWord = "";
     private UserData userData;
     
-    public ListenClient(Socket socket){
+    public ListenClient(Socket socket) throws IOException{
         this.socket = socket;
-        this.userData = new UserData();
+        this.userData = new UserData(socket);
     }
     
     @Override
@@ -49,17 +49,20 @@ public class ListenClient extends Thread{
                 if(action.equalsIgnoreCase(MyUtility.LOGINUSER)){
                     actionLoginUser();
                 }
+                if(action.equalsIgnoreCase(MyUtility.GUARDARENSERVER)){
+                    actionSaveData();
+                }
+                if(action.equalsIgnoreCase(MyUtility.DESCARGARDESERVER)){
+                    actionGetData();
+                }
                 this.sleep(100);
             }
-        }catch(IOException e){
+        }catch(IOException | SQLException | InterruptedException e){
             System.out.println("Server.ListenClient.run() "+e);
-        } catch (SQLException ex) {
-            System.out.println("Server.ListenClient.run() "+ex);
-//            Logger.getLogger(ListenClient.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            System.out.println("Server.ListenClient.run() "+ex);
-//            Logger.getLogger(ListenClient.class.getName()).log(Level.SEVERE, null, ex);
         }
+//            Logger.getLogger(ListenClient.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(ListenClient.class.getName()).log(Level.SEVERE, null, ex);
+
     }
     
     public void actionAddNewUser() throws IOException, SQLException{
@@ -73,13 +76,22 @@ public class ListenClient extends Thread{
     }
     
     public void actionLoginUser() throws IOException{
-        String name = getData();
-        String passWord2 = getData();
-        if(this.userData.checkUser(name,passWord2)){
+        this.nameUser = getData();
+        this.passWord = getData();
+        if(this.userData.checkUser(this.nameUser,this.passWord)){
             this.send.println(MyUtility.EXISTE);
         }else{
             this.send.println(MyUtility.NOEXISTE);
         }
+    }
+    
+    private void actionSaveData() {
+        while(!this.userData.downloadData(this.socket,this.nameUser));
+    }
+    
+    private void actionGetData() throws IOException{
+        String nameDocument = getData();
+        this.userData.uploadData(nameDocument, this.nameUser);
     }
     
     public String getData() throws IOException{

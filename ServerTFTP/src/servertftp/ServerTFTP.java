@@ -3,7 +3,6 @@ package servertftp;
 
 import Server.Server;
 
-
 /**
  *
  * @author mario
