@@ -55,9 +55,11 @@ public class ListenClient extends Thread{
                 if(action.equalsIgnoreCase(MyUtility.DESCARGARDESERVER)){
                     actionGetData();
                 }
-                this.sleep(100);
+                if(action.equalsIgnoreCase(MyUtility.OBTENERDIRECTORIOS)){
+                    actionGetFolders();
+                }
             }
-        }catch(IOException | SQLException | InterruptedException e){
+        }catch(IOException | SQLException e){
             System.out.println("Server.ListenClient.run() "+e);
         }
 //            Logger.getLogger(ListenClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -92,6 +94,10 @@ public class ListenClient extends Thread{
     private void actionGetData() throws IOException{
         String nameDocument = getData();
         this.userData.uploadData(nameDocument, this.nameUser);
+    }
+    
+    public void actionGetFolders() throws IOException{
+        this.userData.uploadFolder(this.nameUser,this.send);
     }
     
     public String getData() throws IOException{

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -23,11 +24,7 @@ import java.util.logging.Logger;
 public class UserData {
     
     private DataOutputStream dataOutputStream = null;
-    private DataInputStream dataInputStream = null;
-    private FileOutputStream fileOutputStream = null;
-    private FileInputStream fileInputStream = null;
     private BufferedOutputStream bufferedOutputStream = null;
-    private BufferedInputStream bufferedInputStream = null;
     
     private String nameDocument = "";
     private int totalSize = 0;
@@ -59,7 +56,7 @@ public class UserData {
             dbConnection.disConnect();
             return false;
         } catch (SQLException ex) {
-            System.err.println("Data.UserData.addNewUser() "+ex.toString());
+            System.out.println("Data.UserData.addNewUser() "+ex.toString());
 //            Logger.getLogger(UserData.class.getName()).log(Level.SEVERE, null, ex); 
             return false;
         }
@@ -85,7 +82,7 @@ public class UserData {
             execution.close();
             dBConnection.disConnect();
         } catch (SQLException ex) {
-            System.err.println("Data.UserData.checkUser() "+ex.toString());
+            System.out.println("Data.UserData.checkUser() "+ex.toString());
 //            Logger.getLogger(UserData.class.getName()).log(Level.SEVERE, null, ex);
         }
         
@@ -97,31 +94,31 @@ public class UserData {
         
         while(true){
             try {
-                this.dataInputStream = new DataInputStream(socket.getInputStream());
+                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
                 
-                this.nameDocument = this.dataInputStream.readUTF();
+                this.nameDocument = dataInputStream.readUTF();
                 
-                this.totalSize = this.dataInputStream.readInt();
+                this.totalSize = dataInputStream.readInt();
                 this.buffer = new byte[this.totalSize];
                 
                 System.out.println("Data.UserData.downloadData() - Name: "+this.nameDocument+"totalSize: "+this.totalSize);
                 
-                this.fileOutputStream = new FileOutputStream("Carpetas\\"+userName+"\\"+this.nameDocument);
-                this.bufferedOutputStream = new BufferedOutputStream(this.fileOutputStream);
-                this.bufferedInputStream = new BufferedInputStream(socket.getInputStream());
+                FileOutputStream fileOutputStream = new FileOutputStream("Carpetas\\"+userName+"\\"+this.nameDocument);
+                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(socket.getInputStream());
                 
                 for (int i = 0; i < this.buffer.length; i++) {
-                    this.buffer[i] = (byte)this.bufferedInputStream.read();
+                        this.buffer[i] = (byte)bufferedInputStream.read();
                 }
                 
-                this.bufferedOutputStream.write(this.buffer);
-                this.bufferedOutputStream.flush();
-                this.fileOutputStream.flush();
-                this.fileOutputStream.close();
+                bufferedOutputStream.write(this.buffer);
+                bufferedOutputStream.flush();
+                fileOutputStream.flush();
+                fileOutputStream.close();
                 System.out.println("Data.UserData.downloadData() Recibido: "+this.nameDocument);
                 return true;
             } catch (IOException ex) {
-                System.err.println("Data.UserData.downloadData() "+ex.toString());
+                System.out.println("Data.UserData.downloadData() "+ex.toString());
                 return false;
 //                Logger.getLogger(UserData.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -133,27 +130,43 @@ public class UserData {
             this.document = new File("Carpetas\\"+userName+"\\"+nameDocument);
             this.totalSize = (int) this.document.length();
             this.dataOutputStream.writeUTF(this.document.getName());
+            System.out.println("Data.UserData.uploadData() Name: "+this.document.getName());
             this.dataOutputStream.writeInt(this.totalSize);
             
-            this.fileInputStream = new FileInputStream("Carpetas\\"+userName+"\\"+nameDocument);
-            this.bufferedInputStream = new BufferedInputStream(this.fileInputStream);
+            FileInputStream fileInputStream = new FileInputStream("Carpetas\\"+userName+"\\"+nameDocument);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
             
             this.buffer = new byte[this.totalSize];
             
-            this.bufferedInputStream.read(this.buffer);
+            bufferedInputStream.read(this.buffer);
             
             for (int i = 0; i < this.buffer.length; i++) {
                 this.bufferedOutputStream.write(buffer[i]);
             }
-            this.bufferedInputStream.close();
+            bufferedInputStream.close();
             this.bufferedOutputStream.flush();
             this.dataOutputStream.flush();
             System.out.println("Data.UserData.upload() Enviado: "+nameDocument);
             return true;
         } catch (IOException ex) {
-            System.err.println("Data.UserData.upload() "+ex.toString());
+            System.out.println("Data.UserData.upload() "+ex.toString());
             return false;
 //            Logger.getLogger(UserData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void uploadFolder(String userName,PrintWriter send) throws IOException{
+        File folder = new File("Carpetas\\"+userName);
+        String[] folders = folder.list();
+        
+        if(folders != null){
+            int size = folders.length;
+            send.println(size);
+            System.out.println("Envia: "+size);
+            for (int i = 0; i < size; i++) {
+                send.println(folders[i]);
+                System.out.println("Envia name: "+folders[i]);
+            }
         }
     }
 }
