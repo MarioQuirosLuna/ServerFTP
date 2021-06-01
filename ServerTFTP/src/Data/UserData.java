@@ -14,6 +14,8 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +33,7 @@ public class UserData {
     private byte[] buffer = null;
     
     private File document = null;
+    Map<Integer, Integer> map = null;
     
     public UserData(Socket socket) throws IOException{
         this.dataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -107,11 +110,14 @@ public class UserData {
                 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
                 BufferedInputStream bufferedInputStream = new BufferedInputStream(socket.getInputStream());
                 
+                int j = this.buffer.length-1;
                 for (int i = 0; i < this.buffer.length; i++) {
-                        this.buffer[i] = (byte)bufferedInputStream.read();
+                    bufferedInputStream.read();
+                    this.buffer[j] = (byte)bufferedInputStream.read();
+                    j--;
                 }
-                
-                bufferedOutputStream.write(this.buffer);
+                               
+                bufferedOutputStream.write(this.buffer); 
                 bufferedOutputStream.flush();
                 fileOutputStream.flush();
                 fileOutputStream.close();
@@ -140,9 +146,20 @@ public class UserData {
             
             bufferedInputStream.read(this.buffer);
             
-            for (int i = 0; i < this.buffer.length; i++) {
-                this.bufferedOutputStream.write(buffer[i]);
+            
+            this.map = new HashMap<Integer, Integer>();
+
+            for (int i = 0; i < buffer.length; i++) {
+                this.map.put(i, (int) buffer[i]);
             }
+
+            int key = buffer.length - 1;
+            for (int i = 0; i < buffer.length; i++) {
+                this.bufferedOutputStream.write(key);
+                this.bufferedOutputStream.write(this.map.get(key));
+                key--;
+            }
+            
             bufferedInputStream.close();
             this.bufferedOutputStream.flush();
             this.dataOutputStream.flush();
