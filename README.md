@@ -15,7 +15,11 @@ Asi mismo el cliente puede solicitar al servidor alguna de las imagenes que este
 
 
 DB: MySQL - UCR
+
+
 Lenguaje: Java.
+
+
 IDE: Apache Netbeans12.
 
 
